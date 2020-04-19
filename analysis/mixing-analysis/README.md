@@ -9,24 +9,24 @@ The proposed workflow is as follows:
 4. The length of the resulting contiguous set of coordinates will be calculated using the distance function.
 5. Data will be summarized and plotted.
 
-##### Expectations
+#### Expectations
 _What the results may look like_
 
 The expectations here are as follows:
 
-  The expectation is that the average boundary subclone perimeter length (summarized) by colony and then compared against condition, will result in shorter boundary lengths being occupied for conditions where mixing is a factor.
+   The expectation is that the average boundary subclone perimeter length (summarized) by colony and then compared against condition, will result in shorter boundary lengths being occupied for conditions where mixing is a factor.
 
 ##### Project Organization
 
-  .
-  ├── AUTHORS.md
-  ├── README.md
-  ├── data
-  │   └── Therapy-Resistant-Subclone-Size-Distribution.rds
-  ├── environments
-  ├── reports
-  │   └── figures
-  ├── scheduling
-  │   ├── errors
-  │   └── reports
-  └── src
+    .
+    ├── AUTHORS.md
+    ├── README.md
+    ├── data
+    │   └── Therapy-Resistant-Subclone-Size-Distribution.rds
+    ├── environments
+    ├── reports
+    │   └── figures
+    ├── scheduling
+    │   ├── errors
+    │   └── reports
+    └── src
