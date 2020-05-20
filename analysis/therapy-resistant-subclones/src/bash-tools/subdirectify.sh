@@ -1,5 +1,5 @@
-# Subdirectify 
-for f in *.oir; do
+# Subdirectify
+for f in *.tif; do
   dir="${f%.*}"
   mkdir $dir
   mv "$f" "./$dir"
