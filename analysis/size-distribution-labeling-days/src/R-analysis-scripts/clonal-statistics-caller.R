@@ -5,9 +5,9 @@ clonal.statistics <- function(folder.path){
   # Function takes a folder path and computes from previously segmented data the clonal statistics table
 
   options(warn=-1)
-  source('./analysis/size-distribution-labeling-days/src/R-analysis-scripts/colony-area-analysis.R')
-  source('./analysis/size-distribution-labeling-days/src/R-analysis-scripts/fp-distance-from-boundary-analysis.R')
-  source('./analysis/size-distribution-labeling-days/src/R-analysis-scripts/fp-area-analysis.R')
+  source('./src/R-analysis-scripts/colony-area-analysis.R')
+  source('./src/R-analysis-scripts/fp-distance-from-boundary-analysis.R')
+  source('./src/R-analysis-scripts/fp-area-analysis.R')
 
   df1 <- colony.area.analysis(folder.path)
   df2 <- fp.distance.from.boundary.analysis(folder.path)

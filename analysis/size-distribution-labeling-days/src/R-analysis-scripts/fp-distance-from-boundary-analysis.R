@@ -1,9 +1,9 @@
 fp.distance.from.boundary.analysis <- function(folder.path){
-  # EXP087 - Colony Clone Size Distribution Calculator
+  # Colony Clone Size Distribution Calculator
   # By Ajay Bhargava
   # 23/05/20
 
-  source('./analysis/size-distribution-labeling-days/src/R-functions/distance-boundary-simple.R')
+  source('./src/R-functions/distance-boundary-simple.R')
   library("tidyverse")
   library("parallel")
 
@@ -12,7 +12,7 @@ fp.distance.from.boundary.analysis <- function(folder.path){
   cl <- makeCluster(no_cores)
 
   clusterEvalQ(cl, {
-    source('./analysis/size-distribution-labeling-days/src/R-functions/distance-boundary-simple.R')
+    source('./src/R-functions/distance-boundary-simple.R')
     library("tidyverse")
     library("parallel")
   })
@@ -31,13 +31,15 @@ fp.distance.from.boundary.analysis <- function(folder.path){
   fp.location.table.tomato <- as_tibble(cbind(location.t = list.files(path = folder.path, pattern = 'dTomato-Clones-Coordinates.csv', full.names = TRUE, recursive = TRUE), id = fp.id.list[fp.id.list[,4] == 'dTomato',][,1]))
   fp.location.table.ypet <- as_tibble(cbind(location.y = list.files(path = folder.path, pattern = 'yPET-Clones-Coordinates.csv', full.names = TRUE, recursive = TRUE), id = fp.id.list[fp.id.list[,4] == 'yPET',][,1]))
   fp.location.table.cfp <- as_tibble(cbind(location.y = list.files(path = folder.path, pattern = 'CFP-Clones-Coordinates.csv', full.names = TRUE, recursive = TRUE), id = fp.id.list[fp.id.list[,4] == 'CFP',][,1]))
-  fp.location <- data.frame(merge(fp.location.table.tomato, fp.location.table.ypet, fp.location.table.cfp))
+    fp.location <- list(fp.location.table.tomato, fp.location.table.cfp, fp.location.table.ypet) %>% reduce(inner_join, by = "id")
   fp <- parApply(cl, fp.location, 1, function(x){
-    a <- read.csv(x[3])
+    a <- read.csv(x[1])
     b <- a[,-c(1)]
-    c <- read.csv(x[2])
+    c <- read.csv(x[3])
     d <- c[,-c(1)]
-    c <- rbind(b,d)
+    e <- read.csv(x[4])
+    f <- c[,-c(1)]  
+    g <- rbind(b,d,f)
   })
 
   data.fp <- mcmapply(function(colony, fp, location){

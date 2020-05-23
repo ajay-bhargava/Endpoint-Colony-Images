@@ -4,7 +4,7 @@ fp.area.analysis <- function(folder.path){
   # 23/05/20
   # Build Complete
 
-  source('./analysis/size-distribution-labeling-days/src/R-functions/shoelace-area-algorithm.R')
+  source('./src/R-functions/shoelace-area-algorithm.R')
   library(tidyverse)
 
   # Clusterize
@@ -12,7 +12,7 @@ fp.area.analysis <- function(folder.path){
   cl <- makeCluster(no_cores)
 
   clusterEvalQ(cl, {
-    source('./analysis/size-distribution-labeling-days/src/R-functions/shoelace-area-algorithm.R')
+    source('./src/R-functions/shoelace-area-algorithm.R')
     library(tidyverse)
   })
 

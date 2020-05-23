@@ -4,7 +4,7 @@ colony.area.analysis <- function(folder.path){
   # 23/05/2020
   # Finished Build.
 
-  source('./analysis/size-distribution-labeling-days/src/R-functions/shoelace-area-algorithm.R')
+  source('./src/R-functions/shoelace-area-algorithm.R')
   library(tidyverse)
   colony.location <- list.files(path = folder.path, pattern = '-Colony-Coordinates.csv', full.names = TRUE, recursive = TRUE)
   colony <- lapply(colony.location, function(x){

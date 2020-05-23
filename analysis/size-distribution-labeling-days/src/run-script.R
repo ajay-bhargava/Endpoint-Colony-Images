@@ -9,7 +9,7 @@ folder.path <- c('../../shared-assets/size-distribution-labeling-days/processed-
 
 # Call the function
 
-source('./analysis/size-distribution-labeling-days/src/R-analysis-scripts/clonal-statistics-caller.R')
+source('./src/R-analysis-scripts/clonal-statistics-caller.R')
 
 # Invoke the function (takes some time to run)
 
