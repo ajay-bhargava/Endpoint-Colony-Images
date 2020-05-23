@@ -32,14 +32,14 @@ fp.distance.from.boundary.analysis <- function(folder.path){
   fp.location.table.tomato <- as_tibble(cbind(location.t = list.files(path = folder.path, pattern = 'dTomato-Clones-Coordinates.csv', full.names = TRUE, recursive = TRUE), id = fp.id.list[fp.id.list[,4] == 'dTomato',][,1]))
   fp.location.table.ypet <- as_tibble(cbind(location.y = list.files(path = folder.path, pattern = 'yPET-Clones-Coordinates.csv', full.names = TRUE, recursive = TRUE), id = fp.id.list[fp.id.list[,4] == 'yPET',][,1]))
   fp.location.table.cfp <- as_tibble(cbind(location.y = list.files(path = folder.path, pattern = 'CFP-Clones-Coordinates.csv', full.names = TRUE, recursive = TRUE), id = fp.id.list[fp.id.list[,4] == 'CFP',][,1]))
-    fp.location <- list(fp.location.table.tomato, fp.location.table.cfp, fp.location.table.ypet) %>% reduce(inner_join, by = "id")
+  fp.location <- list(fp.location.table.tomato, fp.location.table.cfp, fp.location.table.ypet) %>% reduce(inner_join, by = "id")
   fp <- parApply(cl, fp.location, 1, function(x){
     a <- read.csv(x[1])
     b <- a[,-c(1)]
     c <- read.csv(x[3])
     d <- c[,-c(1)]
     e <- read.csv(x[4])
-    f <- c[,-c(1)]
+    f <- e[,-c(1)]
     g <- rbind(b,d,f)
   })
 
