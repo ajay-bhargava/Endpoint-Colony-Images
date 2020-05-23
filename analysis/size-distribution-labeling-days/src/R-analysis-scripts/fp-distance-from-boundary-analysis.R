@@ -20,11 +20,13 @@ fp.distance.from.boundary.analysis <- function(folder.path){
 
   colony.location <- colony.location <- list.files(path = folder.path, pattern = '-Colony-Coordinates.csv', full.names = TRUE, recursive = TRUE)
   split.location <- str_split_fixed(str_extract(colony.location, '\\d{1,3}-[:alnum:]{1,5}-N\\d'), '-', 3)
-  colony.location.index <- tibble(Colony.ID = split.location[,1], Condition = split.location[,2], N = split.location[,3])
-  colony.table <- split(colony.location.index, sort(as.numeric(rownames(colony.location.index))))
+  colony.location.index <- data.frame(Colony.ID = split.location[,1], Condition = split.location[,2], N = split.location[,3])
+  location <- split(colony.location.index, sort(as.numeric(rownames(colony.location.index))))
   colony <- parLapply(cl, colony.location, function(x){
     a <- read.csv(x)
     b <- a[,-c(1)]
+    c <- b[-c(1:2),]
+    d <- as.data.frame(c)
   })
 
   fp.list <- list.files(path = folder.path, pattern = c('Clones-Coordinates.csv'), full.names = TRUE, recursive = TRUE)
@@ -41,10 +43,10 @@ fp.distance.from.boundary.analysis <- function(folder.path){
     e <- read.csv(x[4])
     f <- e[,-c(1)]
     g <- rbind(b,d,f)
+    h <- as.data.frame(g)
   })
 
   data.fp <- mcmapply(function(colony, fp, location){
-    # Colony Coordinates
       output.tomato <- vector("list", length = length(unique(fp[fp$Color == 'dTomato',]$Number)))
       for (i in unique(fp[fp$Color == 'dTomato',]$Number)){
         fx.list.t <- vector("list", length = length(fp[fp$Color == 'dTomato' & fp$Number == i,]$X))
@@ -77,7 +79,7 @@ fp.distance.from.boundary.analysis <- function(folder.path){
       df.f.cfp <- output.i.cfp %>% group_by(Subclone.ID, Subclone.Color) %>% summarize(D = min(D))
       total.df <- rbind(df.f.tomato, df.f.ypet, df.f.cfp)
       total.df <- total.df %>% mutate(N = location$N, Colony.ID = location$Colony.ID, Condition = location$Condition)
-  }, colony, fp, colony.table, mc.preschedule = TRUE)
+  }, colony, fp, location, mc.preschedule = TRUE)
 
   data <- list()
   for (x in 1:ncol(data.fp)){
