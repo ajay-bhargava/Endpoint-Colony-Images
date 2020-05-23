@@ -2,6 +2,7 @@ fp.distance.from.boundary.analysis <- function(folder.path){
   # Colony Clone Size Distribution Calculator
   # By Ajay Bhargava
   # 23/05/20
+  # Testing for bugs, running on cluster ....
 
   source('./src/R-functions/distance-boundary-simple.R')
   library("tidyverse")
@@ -38,7 +39,7 @@ fp.distance.from.boundary.analysis <- function(folder.path){
     c <- read.csv(x[3])
     d <- c[,-c(1)]
     e <- read.csv(x[4])
-    f <- c[,-c(1)]  
+    f <- c[,-c(1)]
     g <- rbind(b,d,f)
   })
 
