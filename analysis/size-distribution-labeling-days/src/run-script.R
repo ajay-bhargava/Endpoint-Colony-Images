@@ -1,4 +1,5 @@
 # Set the algorithm in the parent folder of your analysis algorithm
+# Runscript Set Build -> 23/05/20
 
 setwd('/camp/home/bhargaa/working/Ajay/Thesis/Experiments/Endpoint-Colony-Images/analysis/size-distribution-labeling-days/')
 

@@ -1,25 +1,10 @@
 fp.area.analysis <- function(folder.path){
-  # EXP087 - Colony Clone Size Distribution Calculator
+  # Clone Size Distribution Calculator
   # By Ajay Bhargava
-  # 31/01/20
-  # Function takes a folder path, and returns the table containing the subclone details for each subclone in the datset being analyzed.
-  # Usage:
-  # data.path <- c('~/Documents/EXP087-Subclone-size-distribution-measurement/data/processed')
-  # df <- fp.color.area.analysis(data.path)
-  # Works
+  # 23/05/20
+  # Build Complete
 
-  # Returns:
-  # A tibble: 6 x 6
-  #   N     Colony.ID Treatment Subclone.Color Subclone.Size Subclone.ID
-  #   <chr> <chr>     <chr>     <chr>                  <dbl>       <int>
-  # 1 N3    01        CTRL      dTomato                289             1
-  # 2 N3    01        CTRL      dTomato                115             2
-  # 3 N3    01        CTRL      dTomato             114613             3
-  # 4 N3    01        CTRL      dTomato               1912             4
-  # 5 N3    01        CTRL      dTomato                 13.5           5
-  # 6 N3    01        CTRL      dTomato              72573             6
-
-  source('./src/R-tools/shoelace-area-algorithm.R')
+  source('./analysis/size-distribution-labeling-days/src/R-functions/shoelace-area-algorithm.R')
   library(tidyverse)
 
   # Clusterize
@@ -27,7 +12,7 @@ fp.area.analysis <- function(folder.path){
   cl <- makeCluster(no_cores)
 
   clusterEvalQ(cl, {
-    source('./src/R-tools/shoelace-area-algorithm.R')
+    source('./analysis/size-distribution-labeling-days/src/R-functions/shoelace-area-algorithm.R')
     library(tidyverse)
   })
 
@@ -36,7 +21,7 @@ fp.area.analysis <- function(folder.path){
   data <- parLapply(cl, file.list, function(x){
     df1 <- read.csv(x)
     df.color <- df1[,-c(1)]
-    string <- str_split_fixed(str_extract(x, '\\d{1,3}-[:alnum:]{3,15}-N\\d-[:alpha:]{4,7}'), '-', 4)
+    string <- str_split_fixed(str_extract(x, '\\d{1,3}-[:alnum:]{1,5}-N\\d-[:alpha:]{3,7}'), '-', 4)
     list <- c()
     id <- c()
     for (i in unique(df.color$Number)){
