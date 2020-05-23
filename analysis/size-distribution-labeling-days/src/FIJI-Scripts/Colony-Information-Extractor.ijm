@@ -1,14 +1,14 @@
-// EXP123 - Colony Information Extractor
+// Colony Information Extractor
 // By: Ajay Bhargava
-// 25/01/20
+// 22/05/20
 // Function: Takes an input directory, returns the list of coordinates for each subclone and colony, as well as EdU points
 
 input = getDirectory("Choose a Directory");
-output = "/Users/bhargaa/Documents/Experiments/Subclone-Size-Distribution/data/processed-acqusitions/";
+output = "/camp/home/bhargaa/working/Ajay/Thesis/Experiments/Endpoint-Colony-Images/shared-assets/size-distribution-labeling-days/processed-acquisitions/";
 
 suffix = ".oir";
 
-setBatchMode(false);
+setBatchMode(true);
 
 process_folder(input);
 
@@ -67,17 +67,17 @@ function process_files(input, output, file){
 	File.makeDirectory(main_folder);
 	run("Bio-Formats Macro Extensions");
 	Ext.openImagePlus(path);
-	Stack.setChannel(2);
-	run("Yellow");
-	run("Duplicate...", "title=DAPI-Stack duplicate channels=1");
+	run("Duplicate...", "title=DAPI-Stack duplicate channels=2");
 	selectWindow("DAPI-Stack");
-	run("Gaussian Blur...", "sigma=30 scaled");
+	run("Gaussian Blur...", "sigma=50 scaled");
 	//run("Threshold...");	
-	setThreshold(144, 65535);
+	setThreshold(86, 65535);
 	run("Convert to Mask");
 	run("Analyze Particles...", "size=1000000-Infinity add");
 	close("DAPI-Stack");
-	run("Duplicate...", "title=Working-Stack duplicate channels=2-4");
+	run("Duplicate...", "title=Working-Stack duplicate channels=1-4");
+	Stack.setSlice(2);
+	run("Delete Slice");
 	selectWindow("Working-Stack");
 	run("Scale Bar...", "width=500 height=16 font=12 color=White background=None location=[Lower Right] bold hide overlay label");
 	Stack.setDisplayMode("composite");
@@ -107,11 +107,11 @@ function process_files(input, output, file){
 	open(main_folder + file_title + ".tif");
 	roiManager("Show All");
 	roiManager("Show None");
-	run("Duplicate...", "title=Working-Stack-C1 duplicate channels=1");
-	selectWindow("Working-Stack-C1");
-	run("Gaussian Blur...", "sigma=30 scaled");
+	run("Duplicate...", "title=Working-Stack-C2 duplicate channels=2");
+	selectWindow("Working-Stack-C2");
+	run("Gaussian Blur...", "sigma=50 scaled");
 	//run("Threshold...");
-	setThreshold(144, 65535);
+	setThreshold(86, 65535);
 	run("Convert to Mask");
 	run("Analyze Particles...", "size=1000000-Infinity add");
 	roiManager("Select", 0);
@@ -120,17 +120,17 @@ function process_files(input, output, file){
 	coordinate_extractor_colony(colony_roi_name);
 	saveAs("Results", colony_coordinates_folder + file_title + "-" + "Colony-Coordinates" + ".csv");
 	run("Clear Results");
-	close("Working-Stack-C1");
+	close("Working-Stack-C2");
 	roiManager("reset");
 	
 	// yPET Boundary Files
 	yPET_coordinates_folder = main_folder + file_title + "-yPET-Clones" + File.separator;
 	File.makeDirectory(yPET_coordinates_folder);
-	run("Duplicate...", "title=Working-Stack-C2 duplicate channels=2");
-	selectWindow("Working-Stack-C2");
-	run("Gaussian Blur...", "sigma=10 scaled");
+	run("Duplicate...", "title=Working-Stack-C4 duplicate channels=4");
+	selectWindow("Working-Stack-C4");
+	run("Gaussian Blur...", "sigma=5 scaled");
 	//run("Threshold...");
-	setThreshold(236, 65535);
+	setThreshold(40, 65535);
 	run("Convert to Mask");
 	roiManager("reset");
 	run("Analyze Particles...", "size=100-Infinity add");
@@ -145,16 +145,16 @@ function process_files(input, output, file){
 	run("Clear Results");
 	roiManager("save", yPET_coordinates_folder + file_title + "-yPET-Clones-ROI-List" + ".zip");
 	roiManager("reset");
-	close("Working-Stack-C2");
+	close("Working-Stack-C4");
 	
 	//dTomato Analysis
 	dTomato_coordinates_folder = main_folder + file_title + "-dTomato-Clones" + File.separator;
 	File.makeDirectory(dTomato_coordinates_folder);
-	run("Duplicate...", "title=Working-Stack-C3 duplicate channels=3");
-	selectWindow("Working-Stack-C3");
+	run("Duplicate...", "title=Working-Stack-C1 duplicate channels=1");
+	selectWindow("Working-Stack-C1");
 	run("Gaussian Blur...", "sigma=5 scaled");
 	//run("Threshold...");
-	setThreshold(441, 65535);
+	setThreshold(97, 65535);
 	run("Convert to Mask");
 	roiManager("reset");
 	run("Analyze Particles...", "size=100-Infinity add");
@@ -169,32 +169,37 @@ function process_files(input, output, file){
 	run("Clear Results");
 	roiManager("save", dTomato_coordinates_folder + file_title + "-dTomato-Clones-ROI-List" + ".zip");
 	roiManager("reset");
-	close("Working-Stack-C3");
-	
-	// EdU Coordinates
-	EdU_coordinates_folder = main_folder + file_title + "-EdU-Coordinates" + File.separator;
-	File.makeDirectory(EdU_coordinates_folder);
-	run("Duplicate...", "title=Working-Stack-C4 duplicate channels=4");
-	selectWindow("Working-Stack-C4");
-	run("Find Maxima...", "prominence=200 strict exclude output=[Single Points]");
-	selectWindow("Working-Stack-C4 Maxima"); 
-	run("Analyze Particles...", "add");
+	close("Working-Stack-C1");
+
+	//CFP Analysis
+	cfp_coordinates_folder = main_folder + file_title + "-CFP-Clones" + File.separator;
+	File.makeDirectory(cfp_coordinates_folder);
+	run("Duplicate...", "title=Working-Stack-C3 duplicate channels=3");
+	selectWindow("Working-Stack-C3");
+	run("Gaussian Blur...", "sigma=15 scaled");
+	//run("Threshold...");
+	setThreshold(108, 65535);
+	run("Convert to Mask");
+	roiManager("reset");
+	run("Analyze Particles...", "size=100-Infinity add");
 	n = roiManager("count");
 	for (i=0; i<n; i++){
 	roiManager("select", i);
 	name = Roi.getName;
-	color = "EdU";
+	color = "CFP";
 	coordinate_extractor(name, color);
 	}
-	saveAs("Results", EdU_coordinates_folder + file_title + "-EdU-Maxima" + ".csv");
+	saveAs("Results", cfp_coordinates_folder + file_title + "-CFP-Clones-Coordinates" + ".csv");
 	run("Clear Results");
-	roiManager("save", EdU_coordinates_folder + file_title + "-EdU-ROI-List" + ".zip");
-	close("Working-Stack-C4 Maxima");
+	roiManager("save", cfp_coordinates_folder + file_title + "-CFP-Clones-ROI-List" + ".zip");
 	roiManager("reset");
+	close("Working-Stack-C3");
+
 
 	// Retrieve coordinates of dTomato and yPET segmented objects. Load them, run the ROI numberizer and save the data as a flattened JPEG. 
 	roiManager("open", dTomato_coordinates_folder + file_title + "-dTomato-Clones-ROI-List" + ".zip");
 	roiManager("open", yPET_coordinates_folder + file_title + "-yPET-Clones-ROI-List" + ".zip");
+	roiManager("open", cfp_coordinates_folder + file_title + "-CFP-Clones-ROI-List" + ".zip");
 	n = roiManager("count");
 	for (i=0; i<n; i++){
 		roiManager("select", i);
@@ -214,5 +219,3 @@ function process_files(input, output, file){
 	roiManager("reset");
 	close("*");
 }
-
-print("Done!");
