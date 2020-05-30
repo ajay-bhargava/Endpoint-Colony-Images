@@ -20,6 +20,9 @@ shared-assets
 *.exe
 *.out
 *.app
+*.jpeg
+*.jpg
+
 
 # Distribution / packaging
 .Python

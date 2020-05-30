@@ -20,7 +20,7 @@ echo "SLURM_NCPUS"=$SLURM_JOB_CPUS_PER_NODE
 
 echo "R Processing tools..."
 module load Singularity
-SRCDIR=$HOME/working/Ajay/Thesis/Experiments/Endpoint-Colony-Images/analysis/size-distribution-labeling-days/scheduling/
+SRCDIR=$HOME/working/Ajay/Thesis/Experiments/Endpoint-Colony-Images/analysis/size-distribution-labeling-days/scheduling
 
 echo "Loading CentOS 7 Environment and script:"
 singularity exec -B /camp/lab/sahaie/working/ -i /home/camp/bhargaa/working/Ajay/HPC/environments/singularity/r_imaging-deploy_v3.simg $SRCDIR/Program-Caller.sh
