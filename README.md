@@ -52,3 +52,7 @@ _20/04/20_
 
 1. Spatial distribution of all subclones in the following manner:
     * Subclone closest point to the boundary is to be noted and then plotted as a function of position from boundary. The idea is to describe the spatial positioning in the presence and absence of mixing.
+
+_06/01/20_
+
+1. Completed Size relationship, now need to process day 15/18 data to get recombination potential and a short graph for the distance between subclones and the boundary. Then move on to movie data. I believe that the PIV data should be skipped unless more control movies are found.
