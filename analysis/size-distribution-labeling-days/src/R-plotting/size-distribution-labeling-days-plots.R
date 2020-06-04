@@ -200,46 +200,34 @@ ggsave('./analysis/size-distribution-labeling-days/reports/figures/Plot-Seven.ep
 # Normalize the maximum distance to within each colony
 
 plot.eight <- data.one %>%
-              select(N, Colony.ID, Condition, D, Norm.Subclone.Size) %>%
-              group_by(Colony.ID) %>%
+              group_by(Condition) %>%
               mutate(D.Norm = D / max(D), Size.Norm = Norm.Subclone.Size / max(Norm.Subclone.Size)) %>%
-              filter(Condition == "DAY03") %>%
-              ggplot(aes(x = D.Norm, y = Norm.Subclone.Size, fill = Condition)) +
-              geom_point(colour = "black", size = 0.5, shape = 21) +
+              filter(D.Norm == 0) %>%
+              ggplot(aes(x = Condition, y = Norm.Subclone.Size, fill = Subclone.Color)) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
               theme_publication() +
               theme(legend.position = 'none') +
-              scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x), labels = scales::trans_format("log10", scales::math_format(10^.x)), limits = c(NA, 1e-0)) +
-              labs(x = "Distance from Boundary (Normalized)", y = "Subclone Size (Normalized)")
+              scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x), labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+              stat_compare_means(comparisons = list(c("DAY03", "DAY10"), c("DAY10", "DAY15"), c("DAY03", "DAY15")), size = 4, method = 't.test', symnum.args = symnum.args) +
+              scale_fill_manual(values=c('#FF6347','#E69F00')) +
+              labs(x = "Labeling Time", y = "Subclone Size (Normalized)")
+
 
 plot.nine <- data.one %>%
-              select(N, Colony.ID, Condition, D, Norm.Subclone.Size) %>%
-              group_by(Colony.ID) %>%
+              group_by(Condition) %>%
               mutate(D.Norm = D / max(D), Size.Norm = Norm.Subclone.Size / max(Norm.Subclone.Size)) %>%
-              filter(Condition == "DAY10") %>%
-              ggplot(aes(x = D.Norm, y = Norm.Subclone.Size, fill = Condition)) +
-              geom_point(colour = "black", size = 0.5, shape = 21) +
+              filter(D.Norm > 0.85) %>%
+              ggplot(aes(x = Condition, y = Norm.Subclone.Size, fill = Subclone.Color)) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
               theme_publication() +
               theme(legend.position = 'none') +
-              scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x), labels = scales::trans_format("log10", scales::math_format(10^.x)), limits = c(NA, 1e-0)) +
-              labs(x = "Distance from Boundary (Normalized)", y = "Subclone Size (Normalized)")
-
-
-plot.ten <- data.one %>%
-              select(N, Colony.ID, Condition, D, Norm.Subclone.Size) %>%
-              group_by(Colony.ID) %>%
-              mutate(D.Norm = D / max(D), Size.Norm = Norm.Subclone.Size / max(Norm.Subclone.Size)) %>%
-              filter(Condition == "DAY15") %>%
-              ggplot(aes(x = D.Norm, y = Norm.Subclone.Size, fill = Condition)) +
-              geom_point(colour = "black", size = 0.5, shape = 21) +
-              theme_publication() +
-              theme(legend.position = 'none') +
-              scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x), labels = scales::trans_format("log10", scales::math_format(10^.x)), limits = c(NA, 1e-0)) +
-              labs(x = "Distance from Boundary (Normalized)", y = "Subclone Size (Normalized)")
-
+              scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x), labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+              stat_compare_means(comparisons = list(c("DAY03", "DAY10"), c("DAY10", "DAY15"), c("DAY03", "DAY15")), size = 4, method = 't.test', symnum.args = symnum.args) +
+              scale_fill_manual(values=c('#FF6347','#E69F00')) +
+              labs(x = "Labeling Time", y = "Subclone Size (Normalized)")
 
 ggsave('./analysis/size-distribution-labeling-days/reports/figures/Plot-Eight.eps', plot = plot.eight, width = 4, height = 6, device = "eps")
 ggsave('./analysis/size-distribution-labeling-days/reports/figures/Plot-Nine.eps', plot = plot.nine, width = 4, height = 6, device = "eps")
-ggsave('./analysis/size-distribution-labeling-days/reports/figures/Plot-Ten.eps', plot = plot.ten, width = 4, height = 6, device = "eps")
 
 
 # The above graph cannot be accomplished on this set of data since the colonies all touch the boundary. What needs to be done is to access those sets of colony data where the labeling is taking place early, but as well there should be a growth frontier that also doesn't touch the boundary. Clone size by distance should be calculated there.
