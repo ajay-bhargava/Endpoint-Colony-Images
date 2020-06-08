@@ -101,6 +101,8 @@ bin/
 
 # exclude data from source control by default
 /shared-assets/*
+/shared-assets-local/*
+/shared-assets-local/
 
 # exclude external models from source control
 /src/external/
