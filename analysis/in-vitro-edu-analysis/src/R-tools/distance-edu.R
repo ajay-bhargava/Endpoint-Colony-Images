@@ -12,5 +12,5 @@ distance.edu <- function(i,j,colony){
     object <- filter(colony, Boundary == FALSE)
     a <- (object$X-i)^2 + (object$Y-j)^2
   }
-  return (data.frame(D.Col = sqrt(min(a)), D.Bound = sqrt(min(b))))
+  return (data.frame(D.Free = sqrt(min(a)), D.Well = sqrt(min(b))))
 }
