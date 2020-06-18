@@ -25,6 +25,8 @@ df <- readRDS('../../shared-assets-local/EdU-Analysis-Output.rds')
 df$Colony.Size <- df$Colony.Size / 0.4023
 df$D.Free <- df$D.Free / 0.4023
 df$D.Well <- df$D.Well /0.4023
+df$P.Free <- df$P.Free /0.4023
+df$P.Well <- df$P.Well /0.4023
 
 # Create Boundary EdU class and get distances to centroid
 
@@ -35,7 +37,7 @@ df.one <- df %>%
           mutate(EdU.Class = if_else(D.Well < 100 & D.Free < 100, "Confound", if_else(D.Well > 100 & D.Free < 100, "Free", if_else(D.Well < 100 & D.Free > 100, "Boundary", if_else(D.Well > 100 & D.Free > 100, "Inside", "Not-Sure"))))) %>%
           mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
           mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
-          select(N, Colony.ID, Colony.Size, EdU.Free, EdU.Well, EdU.Class, Size) %>%
+          select(N, Colony.ID, Colony.Size, EdU.Free, EdU.Well, EdU.Class, Size, P.Free, P.Well) %>%
           as_tibble()
 
 # Data One is Colonies that don't touch a boundary
@@ -69,9 +71,13 @@ plot.two <- data.one %>%
 # Plot Three - Measure of the average # of EdU points for colonies facing the well vs facing the growth zone for the same colony
 
 plot.three <- data.two %>%
-              group_by(Colony.ID, EdU.Class) %>%
+              group_by(Colony.ID, EdU.Class, P.Free, P.Well) %>%
               tally() %>%
-              ggplot(aes(x = EdU.Class, y = n)) +
+              ungroup() %>%
+              mutate(Ratio = if_else(EdU.Class == "Boundary", n / P.Well, n / P.Free)) %>%
+              ungroup() %>%
+              group_by(Colony.ID, EdU.Class, n, Ratio) %>%
+              ggplot(aes(x = EdU.Class, y = Ratio)) +
               geom_boxplot(color = 'black', lwd = 1.1) +
               theme_publication() +
               labs(x = "EdU Location", y = "Number of EdU+'ve cells") +
