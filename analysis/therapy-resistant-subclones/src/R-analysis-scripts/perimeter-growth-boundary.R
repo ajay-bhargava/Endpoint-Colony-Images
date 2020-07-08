@@ -36,10 +36,15 @@ perimeter.growth.boundary <- function(folder.path){
   }
 
   perimeter.data <- parLapply(cl, colony.bound, function(data){
-    working <- data %>% filter(Boundary == FALSE)
-    working <- working %>% mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2))
-    working <- working %>% filter(L < 100) %>% group_by(Treatment, Colony.ID) %>% summarize(P = sum(L))
+    output <- data %>%
+              group_by(N, Colony.ID, Treatment, Boundary) %>%
+              mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
+              summarize(P = sum(L))
   })
+  perimeter <- do.call(rbind, perimeter.data)
+  perimeter$Boundary[perimeter$Boundary == FALSE] <- "P.Free"
+  perimeter$Boundary[perimeter$Boundary == TRUE] <- "P.Well"
+  perimeter <- perimeter %>% spread(Boundary, P)
 
-  return(do.call(rbind, perimeter.data)) 
+  return(perimeter)
 }

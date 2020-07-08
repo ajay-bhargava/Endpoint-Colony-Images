@@ -29,7 +29,7 @@ colony.area.analysis <- function(folder.path){
   colony.location.index <- tibble(N = split.location[,3], Colony.ID = split.location[,1], Treatment = split.location[,2])
   colony.location.table <- split(colony.location.index, sort(as.numeric(rownames(colony.location.index))))
   colony.area <- map2(colony, colony.location.table, function(colony, id){
-    data <- data.frame(N = id$N, Colony.ID = id$Colony.ID, Treatment = id$Treatment, Colony.Size = area(colony))
+    data <- data.frame(N = id$N, Colony.ID = id$Colony.ID, Treatment = id$Treatment, Colony.Size = area(colony), Centroid.X = centroid.x(colony), Centroid.Y = centroid.y(colony))
   })
   return(do.call(rbind, colony.area))
 }

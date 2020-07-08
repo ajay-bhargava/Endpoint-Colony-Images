@@ -1,4 +1,4 @@
-mean.edu.distance.boundary <- function(folder.path){
+edu.distance.boundary <- function(folder.path){
   # Function output
   #   Colony.ID mean.EdU.D
   # 1         3        600
@@ -63,7 +63,5 @@ mean.edu.distance.boundary <- function(folder.path){
   for (x in 1:ncol(distances.meta)){
     data[[x]] <- as.data.frame(distances.meta[,x])
   }
-
-  bound.data <- do.call(rbind, data)
-  return(bound.data %>% group_by(N, Colony.ID, Treatment) %>% summarize(D.Mu.Free = mean(D.Free)))
+  return(do.call(rbind, data))
 }
