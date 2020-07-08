@@ -15,8 +15,10 @@ source('./src/R-analysis-scripts/in-vitro-edu-stats-caller.R')
 
 df <- clonal.statistics(folder.path)
 df2 <- edu.stats.caller(folder.path)
+#df3 <- spatial.hedgemony(folder.path)
 
 # Save the Data in the notebooks folder.
 
 saveRDS(df, "../../shared-assets/motility-modulator-data-output/Distribution-Dataset.rds")
 saveRDS(df2, "../../shared-assets/motility-modulator-data-output/EdU-Coordinates-Dataset.rds")
+#saveRDS(df3, "../../shared-assets/motility-modulator-data-output/Spatial-hedgemony-Dataset.rds")
