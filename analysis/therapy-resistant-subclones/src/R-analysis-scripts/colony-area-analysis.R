@@ -17,6 +17,7 @@ colony.area.analysis <- function(folder.path){
   #   <chr> <chr>     <chr>           <dbl>
   # 1 N3    01        CTRL         3185132.
   source('./src/R-tools/shoelace-area-algorithm.R')
+  source('./src/R-tools/centroid-tools.R')
   library(tidyverse)
   file.list <- list.files(path = folder.path, pattern = '-Colony-Coordinates.csv', full.names = TRUE, recursive = TRUE)
   colony.location <- list.files(path = folder.path, pattern = '-Colony-Coordinates.csv', full.names = TRUE, recursive = TRUE)

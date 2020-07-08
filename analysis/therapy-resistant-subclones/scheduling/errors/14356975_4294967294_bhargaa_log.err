@@ -6,12 +6,6 @@
 ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
 ✖ dplyr::lag()    masks stats::lag()
-Joining, by = c("N", "Colony.ID", "Treatment")
-Joining, by = c("N", "Colony.ID", "Treatment", "Subclone.ID", "Subclone.Color")
-Joining, by = c("N", "Colony.ID", "Treatment", "Subclone.ID", "Subclone.Color")
-Joining, by = c("N", "Colony.ID", "Treatment")
-Joining, by = c("N", "Colony.ID", "Treatment")
-Error in file(filename, "r", encoding = encoding) : 
-  cannot open the connection
-Calls: edu.stats.caller -> source -> file
+Error in centroid.x(colony) : could not find function "centroid.x"
+Calls: clonal.statistics -> colony.area.analysis -> map2 -> .f -> data.frame
 Execution halted
