@@ -9,7 +9,7 @@ edu.stats.caller <- function(folder.path){
   source('./src/R-analysis-scripts/perimeter-growth-boundary.R')
 
   #colony.coordinate.preprocessor(folder.path)
-  df1 <- colony.area.centroid.analysis(folder.path)
+  df1 <- colony.area.analysis(folder.path)
   df2 <- edu.distance.boundary(folder.path)
   df3 <- perimeter.growth.boundary(folder.path)
   data <- inner_join(df1, df2)
