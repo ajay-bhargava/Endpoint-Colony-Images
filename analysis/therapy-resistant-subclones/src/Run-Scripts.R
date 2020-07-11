@@ -14,12 +14,12 @@ source('./src/R-analysis-scripts/spatial-hedgemony-caller.R')
 
 # Invoke the function (takes some time to run)
 
-df <- clonal.statistics(folder.path)
+df1 <- clonal.statistics(folder.path)
 df2 <- edu.stats.caller(folder.path)
-#df3 <- spatial.hedgemony(folder.path)
+df3 <- spatial.hedgemony(folder.path)
 
 # Save the Data in the notebooks folder.
 
-saveRDS(df, "../../shared-assets/motility-modulator-data-output/Distribution-Dataset.rds")
+saveRDS(df1, "../../shared-assets/motility-modulator-data-output/Distribution-Dataset.rds")
 saveRDS(df2, "../../shared-assets/motility-modulator-data-output/EdU-Coordinates-Dataset.rds")
-#saveRDS(df3, "../../shared-assets/motility-modulator-data-output/Spatial-hedgemony-Dataset.rds")
+saveRDS(df3, "../../shared-assets/motility-modulator-data-output/Spatial-Hedgemony-Dataset.rds")
