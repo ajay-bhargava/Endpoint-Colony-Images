@@ -11,7 +11,7 @@
 #SBATCH --partition=cpu
 #SBATCH --output=reports/%A_%a_%u_report.out
 #SBATCH --error=errors/%A_%a_%u_log.err
-#SBATCH --time=0-12:00:00
+#SBATCH --time=2-12:00:00
 
 echo "SLURM_JOBID="$SLURM_JOBID
 echo "SLURM_JOB_NODELIST"=$SLURM_JOB_NODELIST

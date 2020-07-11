@@ -4,7 +4,7 @@ setwd('/camp/home/bhargaa/working/Ajay/Thesis/Experiments/Endpoint-Colony-Images
 
 # Call the folder path of your data
 
-folder.path <- c('../../shared-assets/processed-acquisitions/')
+folder.path <- c('../../shared-assets/processed-acquisitions-2/')
 
 # Call the function
 
