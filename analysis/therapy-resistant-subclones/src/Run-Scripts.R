@@ -10,6 +10,7 @@ folder.path <- c('../../shared-assets/processed-acquisitions-2/')
 
 source('./src/R-analysis-scripts/clonal-statistics-caller.R')
 source('./src/R-analysis-scripts/in-vitro-edu-stats-caller.R')
+source('./src/R-analysis-scripts/spatial-hedgemony-caller.R')
 
 # Invoke the function (takes some time to run)
 
