@@ -1,4 +1,4 @@
-edu.stats.caller <- function(folder.path){
+spatial.hedgemony.caller <- function(folder.path){
   # Function takes a folder path and computes from previously segmented data the clonal statistics table
   options(warn=-1)
   source('./src/R-analysis-scripts/spatial-hedgemony-calculator.R')

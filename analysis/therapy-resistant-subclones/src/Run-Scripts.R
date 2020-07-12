@@ -16,7 +16,7 @@ source('./src/R-analysis-scripts/spatial-hedgemony-caller.R')
 
 df1 <- clonal.statistics(folder.path)
 df2 <- edu.stats.caller(folder.path)
-df3 <- spatial.hedgemony(folder.path)
+df3 <- spatial.hedgemony.caller(folder.path)
 
 # Save the Data in the notebooks folder.
 
