@@ -9,6 +9,13 @@
 # Scaling
 scale <- 0.4023
 
+data_summary <- function(x) {
+   m <- mean(x)
+   ymin <- m-sd(x)
+   ymax <- m+sd(x)
+   return(c(y=m,ymin=ymin,ymax=ymax))
+}
+
 # Internal FX
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
@@ -20,6 +27,7 @@ setwd('/Users/bhargaa/Documents/Experiments/Endpoint-Colony-Images/analysis/moti
 library(tidyverse)
 library(ggpubr)
 library(gridExtra)
+library(scales)
 source('./src/R-tools/graphing_theme.R')
 
 
@@ -30,43 +38,48 @@ RDS.THREE <- readRDS('../../shared-assets-local/Spatial-Hedgemony-Dataset-144331
 
 # #######
 #
-# Process RDS.ONE -> data.one
+# Process RDS.ONE
 # Process the subclone size distribution such that a comparison between "CTRL", "TGFBE", "TGFBL", and "SMIFH2" can be made.
 #
 # #######
 
-# For ECDF
-data.one <- RDS.ONE %>%
-            select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size") %>%
-            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
-            mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size)
-
-# For Bar Plot of Size Deviation
-data.two <- data.one %>%
-            group_by(Treatment, Colony.ID) %>%
-            summarize(Var = var(Norm.Subclone.Size), SD = sd(Norm.Subclone.Size)) %>%
-            replace_na(list(Var = 0, SD = 0)) %>%
-            ungroup()
-
 # Plot One of Subclone Size Deviation across treatments
-plot.one <- data.two %>%
-            ggplot(aes(x = Treatment, y = SD)) +
-            stat_summary(geom = "bar",
-                        color = "black",
-                        fill = "white",
-                        linetype = "solid",
-                        size = 1,
-                        fun.y = "mean") +
+plot.one <- RDS.ONE %>%
+            select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size", "Colony.Size") %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+            mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+            ungroup() %>%
+            mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+            ungroup() %>%
+            mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+            group_by(Treatment, Colony.ID) %>%
+            summarize(Var = var(Norm.Subclone.Size), SD = sd(Norm.Subclone.Size), Size = mean(fold.tumor.size)) %>%
+            replace_na(list(Var = 0, SD = 0)) %>%
+            ungroup() %>%
+            mutate(Size=cut(Size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+            filter(Size %in% c("L", "XL")) %>%
+            ggplot(aes(x = Treatment, y = SD, fill = Treatment)) +
+            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+            stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
-            stat_summary(geom = "errorbar",
-                        width = 0.1,
-                        fun.ymax = function(x) mean(x) + sd(x) / sqrt(length(x)),
-                        fun.ymin = function(x) mean(x) - sd(x) / sqrt(length(x))) +
+            # stat_summary(geom = "errorbar",
+            #             width = 0.1,
+            #             fun.ymax = function(x) mean(x) + sd(x) / sqrt(length(x)),
+            #             fun.ymin = function(x) mean(x) - sd(x) / sqrt(length(x))) +
             stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args) +
-            labs(x = "Condition", y = "Subclone Size Distribution Standard Deviation")
+            labs(x = "Condition", y = "Subclone Size Distribution Standard Deviation") +
+            theme(legend.position = 'none')
 
 # Plot two of ECDF by treatment
-plot.two <- data.one %>%
+plot.two <- RDS.ONE %>%
+            select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size", "Colony.Size") %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+            mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+            ungroup() %>%
+            mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+            ungroup() %>%
+            mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+            filter(Size %in% c("L", "XL")) %>%
             ggplot(aes(Norm.Subclone.Size, color = Treatment)) +
             stat_ecdf(size = 1, geom = "step", pad = FALSE) +
             theme_publication() +
@@ -77,7 +90,7 @@ plot.two <- data.one %>%
 # #######
 #
 # Process RDS.TWO -> data.three
-# Process the subclone size distribution such that a comparison between "CTRL", "TGFBE", "TGFBL", and "SMIFH2" can be made.
+# Process the data such that a comparison between "CTRL", "TGFBE", "TGFBL", and "SMIFH2" can be made.
 #
 # #######
 
@@ -88,23 +101,96 @@ data.three <- RDS.TWO %>%
               mutate(EdU.Free = (D.Free) / (D.Free +  D.Centroid.to.EdU)) %>%
               mutate(EdU.Well = (D.Well) / (D.Well +  D.Centroid.to.EdU)) %>%
               mutate(EdU.Class = if_else(D.Well < 100 & D.Free < 100, "Confound", if_else(D.Well > 100 & D.Free < 100, "Free", if_else(D.Well < 100 & D.Free > 100, "Boundary", if_else(D.Well > 100 & D.Free > 100, "Inside", "Not-Sure"))))) %>%
-              group_by(Treatment) %>%
               mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
               ungroup() %>%
               mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
-              select(N, Treatment, Colony.ID, Colony.Size, EdU.Free, EdU.Well, EdU.Class, Size) %>%
+              select(N, Treatment, Colony.ID, Colony.Size, EdU.Free, EdU.Well, EdU.Class, Size, fold.tumor.size) %>%
               as_tibble()
 
-# Colonies that don't touch a boundary
-data.four <- data.three %>% filter(is.na(EdU.Class)) %>% select(-c(EdU.Well, EdU.Class))
+# # Colonies that don't touch a boundary
+# data.four <- data.three %>% filter(is.na(EdU.Class)) %>% select(-c(EdU.Well, EdU.Class))
 
-# Colonies that do touch a boundary
-data.five <- data.three %>% filter(!is.na(EdU.Class)) %>% filter(EdU.Class %!in% c("Inside", "Confound"))
+# Plot three, four, five (Distribution of EDU points by Treatment)
+xlabs.three <- paste(data.three %>%
+                     filter(EdU.Class %!in% c("Boundary", "Confound", "Not-Sure")) %>%
+                     filter(Size %in% c("L", "XL")) %>%
+                     group_by(Treatment) %>%
+                     summarize(N = n_distinct(Colony.ID)) %>%
+                     .$Treatment,
+                     "\n(N = " ,
+                     data.three %>%
+                     filter(EdU.Class %!in% c("Boundary", "Confound", "Not-Sure")) %>%
+                     filter(Size %in% c("L", "XL")) %>%
+                     group_by(Treatment) %>%
+                     summarize(N = n_distinct(Colony.ID)) %>%
+                     .$N, ")", sep = "")
 
-# Plot three (Distribution of EDU points by Treatment for colonies that do not )
-
-plot.three <- data.four %>%
-              ggplot(aes(y = EdU.Free, x = Treatment, fill = Treatment)) +
-              geom_violin(lwd = 1.1) +
+plot.three <- data.three %>%
+              filter(EdU.Class %!in% c("Boundary", "Confound", "Not-Sure")) %>%
+              filter(Size %in% c("L", "XL")) %>%
+              group_by(Colony.ID, Treatment) %>%
+              summarize(mean.free = mean(EdU.Free), sd.free = sd(EdU.Free)) %>%
+              ggplot(aes(y = sd.free, x = Treatment, fill = Treatment)) +
+              geom_boxplot(lwd = 1.1) +
               theme_publication() +
-              labs(x = "Treatment", y = "EdU+'ve cell position \n (Normalized)")
+              labs(x = "Treatment", y = "Spread of EdU+'ve cells in colony \n (normalized to colony size)") +
+              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              scale_x_discrete(labels=xlabs.three) +
+              theme(legend.position = 'none')
+
+plot.four <- data.three %>%
+              filter(EdU.Class %!in% c("Boundary", "Confound", "Not-Sure")) %>%
+              filter(Size %in% c("L", "XL")) %>%
+              group_by(Colony.ID, Treatment) %>%
+              summarize(mean.free = mean(EdU.Free), sd.free = sd(EdU.Free)) %>%
+              ggplot(aes(y = mean.free, x = Treatment, fill = Treatment)) +
+              geom_boxplot(lwd = 1.1) +
+              theme_publication() +
+              labs(x = "Treatment", y = "Mean position of EdU+'ve cells in colony \n (normalized to colony size)") +
+              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              scale_x_discrete(labels=xlabs.three) +
+              ylim(0,1) +
+              theme(legend.position = 'none')
+
+plot.five <- data.three %>%
+             filter(EdU.Class %!in% c("Boundary", "Confound", "Not-Sure")) %>%
+             filter(Size %in% c("L", "XL")) %>%
+             group_by(Colony.ID, Treatment) %>%
+             summarize(mean.size = mean(Colony.Size)) %>%
+             ggplot(aes(y = mean.size, x = Treatment, fill = Treatment)) +
+             geom_boxplot(lwd = 1.1) +
+             theme_publication() +
+             labs(x = "Treatment", y = "Mean Colony Size \n (normalized to smallest colony measured)") +
+             stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
+             scale_x_discrete(labels=xlabs.three) +
+             theme(legend.position = 'none')
+
+# #######
+#
+# Process RDS.THREE -> data.four
+# Process the data such that a comparison between "CTRL", "TGFBE", "TGFBL", and "SMIFH2" can be made.
+#
+# #######
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# layout <- rbind(c(1,1,1,2,2,2),
+#                 c(1,1,1,2,2,2),
+#                 c(1,1,1,2,2,2),
+#                 c(3,3,3,4,4,4),
+#                 c(3,3,3,4,4,4),
+#                 c(3,3,3,4,4,4))
+# final.plot <- arrangeGrob(plot.one, plot.two, plot.three, plot.five, layout_matrix = layout)
