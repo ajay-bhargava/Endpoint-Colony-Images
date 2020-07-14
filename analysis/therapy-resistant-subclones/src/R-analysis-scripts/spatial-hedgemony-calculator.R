@@ -41,7 +41,7 @@ spatial.hedgemony.calculator <- function(folder.path){
       for (i in unique(fp[fp$Color == 'dTomato',]$Number)){
         fx.list.t <- vector("list", length = length(fp[fp$Color == 'dTomato' & fp$Number == i,]$X))
         for (j in 1:length(fp[fp$Color == 'dTomato' & fp$Number == i,]$X)){
-          fx.list.t[[j]] <- min.distance(fp[fp$Color == 'dTomato' & fp$Number == i,]$X[j], fp[fp$Color == 'dTomato' & fp$Number == i,]$Y[j], colony, fp[fp$Color == 'dTomato' & fp$Number == i,]$Number[1], "dTomato")
+          fx.list.t[[j]] <- min.distance.spatial(fp[fp$Color == 'dTomato' & fp$Number == i,]$X[j], fp[fp$Color == 'dTomato' & fp$Number == i,]$Y[j], colony, fp[fp$Color == 'dTomato' & fp$Number == i,]$Number[1], "dTomato")
         }
         output.tomato[[i]] <- do.call(rbind, fx.list.t)
       }
@@ -49,7 +49,7 @@ spatial.hedgemony.calculator <- function(folder.path){
       for (i in unique(fp[fp$Color == 'yPET',]$Number)){
         fx.list.y <- vector("list", length = length(fp[fp$Color == 'yPET' & fp$Number == i,]$X))
         for (j in 1:length(fp[fp$Color == 'yPET' & fp$Number == i,]$X)){
-          fx.list.y[[j]] <- min.distance(fp[fp$Color == 'yPET' & fp$Number == i,]$X[j], fp[fp$Color == 'yPET' & fp$Number == i,]$Y[j], colony, fp[fp$Color == 'yPET' & fp$Number == i,]$Number[1], "yPET")
+          fx.list.y[[j]] <- min.distance.spatial(fp[fp$Color == 'yPET' & fp$Number == i,]$X[j], fp[fp$Color == 'yPET' & fp$Number == i,]$Y[j], colony, fp[fp$Color == 'yPET' & fp$Number == i,]$Number[1], "yPET")
         }
         output.ypet[[i]] <- do.call(rbind, fx.list.y)
       }
