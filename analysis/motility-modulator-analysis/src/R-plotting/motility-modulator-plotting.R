@@ -29,12 +29,13 @@ library(ggpubr)
 library(gridExtra)
 library(scales)
 source('./src/R-tools/graphing_theme.R')
+source('./src/R-tools/roll.R')
 
 
 # Read in each dataset
 RDS.ONE <- readRDS('../../shared-assets-local/Distribution-Dataset-14433144.rds')
 RDS.TWO <- readRDS('../../shared-assets-local/EdU-Coordinates-Dataset-14433144.rds')
-RDS.THREE <- readRDS('../../shared-assets-local/Spatial-Hedgemony-Dataset-14433144.rds')
+RDS.THREE <- readRDS('../../shared-assets-local/Spatial-Hedgemony-Dataset-14512621.rds')
 
 # #######
 #
@@ -173,24 +174,69 @@ plot.five <- data.three %>%
 # #######
 
 
+xlabs.six <- paste(RDS.THREE %>%
+                    mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+                    ungroup() %>%
+                    mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                    filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+                    filter(Size %in% c("L", "XL")) %>%
+                    select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
+                    group_by(N, Colony.ID, Treatment, Subclone.ID, P.Free) %>%
+                    mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
+                    summarize(P = sum(L)) %>%
+                    ungroup() %>%
+                    mutate(P.Fraction = P / P.Free) %>%
+                    group_by(N, Colony.ID, Treatment) %>%
+                    summarize(P.Fraction.Colony = mean(P.Fraction)) %>%
+                    group_by(Treatment) %>%
+                    summarize(N = n_distinct(Colony.ID)) %>%
+                    .$Treatment,
+                    "\n(N = " ,
+                    RDS.THREE %>%
+                    mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+                    ungroup() %>%
+                    mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                    filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+                    filter(Size %in% c("L", "XL")) %>%
+                    select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
+                    group_by(N, Colony.ID, Treatment, Subclone.ID, P.Free) %>%
+                    mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
+                    summarize(P = sum(L)) %>%
+                    ungroup() %>%
+                    mutate(P.Fraction = P / P.Free) %>%
+                    group_by(N, Colony.ID, Treatment) %>%
+                    summarize(P.Fraction.Colony = mean(P.Fraction)) %>%
+                    group_by(Treatment) %>%
+                    summarize(N = n_distinct(Colony.ID)) %>%
+                    .$N, ")", sep = "")
+
+plot.six <- RDS.THREE %>%
+            mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+            ungroup() %>%
+            mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+            filter(Size %in% c("L", "XL")) %>%
+            select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
+            group_by(N, Colony.ID, Treatment, Subclone.ID, P.Free) %>%
+            mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
+            summarize(P = sum(L)) %>%
+            ungroup() %>%
+            mutate(P.Fraction = P / P.Free) %>%
+            group_by(N, Colony.ID, Treatment) %>%
+            summarize(P.Fraction.Colony = mean(P.Fraction)) %>%
+            ggplot(aes(x = Treatment, y = P.Fraction.Colony, fill = Treatment)) +
+            geom_boxplot(lwd = 1.1) +
+            theme_publication() +
+            scale_x_discrete(labels = xlabs.six) +
+            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args) +
+            labs(x = "Treatment", y = "Subclone boundary dominance") +
+            theme(legend.position = 'none')
 
 
+layout <- rbind(c(1,1,2,2,3,3),
+                c(1,1,2,2,3,3),
+                c(4,4,5,5,6,6),
+                c(4,4,5,5,6,6))
+final.plot <- arrangeGrob(plot.one, plot.two, plot.three, plot.four, plot.five, plot.six, layout_matrix = layout)
 
-
-
-
-
-
-
-
-
-
-
-
-# layout <- rbind(c(1,1,1,2,2,2),
-#                 c(1,1,1,2,2,2),
-#                 c(1,1,1,2,2,2),
-#                 c(3,3,3,4,4,4),
-#                 c(3,3,3,4,4,4),
-#                 c(3,3,3,4,4,4))
-# final.plot <- arrangeGrob(plot.one, plot.two, plot.three, plot.five, layout_matrix = layout)
+ggsave('./reports/figures/Motility-Clone-Size-Distribution-Analysis.eps', final.plot, width = 9, height = 9, device=  "eps")
