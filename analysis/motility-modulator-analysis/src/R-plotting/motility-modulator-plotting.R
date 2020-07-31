@@ -6,6 +6,31 @@
 #
 # ##
 
+# Pictures that represent the data 
+
+# # A tibble: 18 x 5
+# # Groups:   Treatment [3]
+#    Treatment Colony.ID         Var       SD Size
+#    <chr>     <chr>           <dbl>    <dbl> <fct>
+#  1 CTRL      009       0.00211     0.0459   XL
+#  2 CTRL      012       0.000898    0.0300   XL
+#  3 CTRL      016       0.000569    0.0239   XL
+#  4 CTRL      015       0.000338    0.0184   XL
+#  5 SMIFH2    061       0.000323    0.0180   L
+#  6 CTRL      042       0.000194    0.0139   L
+#  7 CTRL      013       0.000143    0.0119   XL
+#  8 CTRL      003       0.0000909   0.00953  XL
+#  9 CTRL      048       0.0000908   0.00953  XL
+# 10 CTRL      005       0.0000907   0.00952  XL
+# 11 CTRL      010       0.0000645   0.00803  XL
+# 12 CTRL      006       0.0000603   0.00777  XL
+# 13 TGFBE     083       0.0000340   0.00583  L
+# 14 TGFBE     118       0.00000688  0.00262  L
+# 15 TGFBE     049       0.00000291  0.00171  XL
+# 16 TGFBE     058       0.00000291  0.00171  XL
+# 17 TGFBE     131       0.000000980 0.000990 XL
+# 18 TGFBE     056       0.000000916 0.000957 L
+
 # Scaling
 scale <- 0.4023
 
@@ -45,9 +70,47 @@ RDS.THREE <- readRDS('../../shared-assets-local/Spatial-Hedgemony-Dataset-145126
 # #######
 
 # Plot One of Subclone Size Deviation across treatments
+xlabs.one <- paste(RDS.ONE %>%
+                    select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size", "Colony.Size") %>%
+                    filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
+                    mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+                    ungroup() %>%
+                    mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+                    ungroup() %>%
+                    mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                    group_by(Treatment, Colony.ID) %>%
+                    summarize(Var = var(Norm.Subclone.Size), SD = sd(Norm.Subclone.Size), Size = mean(fold.tumor.size)) %>%
+                    replace_na(list(Var = 0, SD = 0)) %>%
+                    ungroup() %>%
+                    mutate(Size=cut(Size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                    filter(Size %in% c("L", "XL")) %>%
+                    group_by(Treatment) %>%
+                    summarize(N = n_distinct(Colony.ID)) %>%
+                    .$Treatment,
+                    "\n(N = " ,
+                    RDS.ONE %>%
+                    select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size", "Colony.Size") %>%
+                    filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
+                    mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+                    ungroup() %>%
+                    mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+                    ungroup() %>%
+                    mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                    group_by(Treatment, Colony.ID) %>%
+                    summarize(Var = var(Norm.Subclone.Size), SD = sd(Norm.Subclone.Size), Size = mean(fold.tumor.size)) %>%
+                    replace_na(list(Var = 0, SD = 0)) %>%
+                    ungroup() %>%
+                    mutate(Size=cut(Size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                    filter(Size %in% c("L", "XL")) %>%
+                    group_by(Treatment) %>%
+                    summarize(N = n_distinct(Colony.ID)) %>%
+                  .$N, ")", sep = "")
+
+
+
 plot.one <- RDS.ONE %>%
             select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size", "Colony.Size") %>%
-            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
             mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
             ungroup() %>%
             mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
@@ -67,14 +130,15 @@ plot.one <- RDS.ONE %>%
             #             width = 0.1,
             #             fun.ymax = function(x) mean(x) + sd(x) / sqrt(length(x)),
             #             fun.ymin = function(x) mean(x) - sd(x) / sqrt(length(x))) +
-            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args) +
-            labs(x = "Condition", y = "Subclone Size Distribution Standard Deviation") +
+            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args) +
+            labs(x = "Condition", y = "Subclone Size Distribution \n Standard Deviation") +
+            scale_x_discrete(labels=xlabs.one) +
             theme(legend.position = 'none')
 
 # Plot two of ECDF by treatment
 plot.two <- RDS.ONE %>%
             select("N", "Colony.ID", "Treatment", "Colony.Size", "Subclone.ID", "Subclone.Color", "Subclone.Size", "Colony.Size") %>%
-            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
             mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
             ungroup() %>%
             mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
@@ -97,7 +161,7 @@ plot.two <- RDS.ONE %>%
 
 data.three <- RDS.TWO %>%
               select("N", "Colony.ID", "Treatment", "Colony.Size", "Centroid.X", "Centroid.Y", "D.Free", "D.Well", "X", "Y") %>%
-              filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+              filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
               mutate(D.Centroid.to.EdU = sqrt((X - Centroid.X)^2 + (Y - Centroid.Y)^2)) %>%
               mutate(EdU.Free = (D.Free) / (D.Free +  D.Centroid.to.EdU)) %>%
               mutate(EdU.Well = (D.Well) / (D.Well +  D.Centroid.to.EdU)) %>%
@@ -132,10 +196,11 @@ plot.three <- data.three %>%
               group_by(Colony.ID, Treatment) %>%
               summarize(mean.free = mean(EdU.Free), sd.free = sd(EdU.Free)) %>%
               ggplot(aes(y = sd.free, x = Treatment, fill = Treatment)) +
-              geom_boxplot(lwd = 1.1) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+              stat_summary(fun.data=data_summary, color="black") +
               theme_publication() +
-              labs(x = "Treatment", y = "Spread of EdU+'ve cells in colony \n (normalized to colony size)") +
-              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              labs(x = "Treatment", y = "Standard Deviation of EdU \n (normalized to colony size)") +
+              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
               scale_x_discrete(labels=xlabs.three) +
               theme(legend.position = 'none')
 
@@ -145,10 +210,11 @@ plot.four <- data.three %>%
               group_by(Colony.ID, Treatment) %>%
               summarize(mean.free = mean(EdU.Free), sd.free = sd(EdU.Free)) %>%
               ggplot(aes(y = mean.free, x = Treatment, fill = Treatment)) +
-              geom_boxplot(lwd = 1.1) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+              stat_summary(fun.data=data_summary, color="black") +
               theme_publication() +
               labs(x = "Treatment", y = "Mean position of EdU+'ve cells in colony \n (normalized to colony size)") +
-              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
               scale_x_discrete(labels=xlabs.three) +
               ylim(0,1) +
               theme(legend.position = 'none')
@@ -159,10 +225,11 @@ plot.five <- data.three %>%
              group_by(Colony.ID, Treatment) %>%
              summarize(mean.size = mean(Colony.Size)) %>%
              ggplot(aes(y = mean.size, x = Treatment, fill = Treatment)) +
-             geom_boxplot(lwd = 1.1) +
+             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+             stat_summary(fun.data=data_summary, color="black") +
              theme_publication() +
              labs(x = "Treatment", y = "Mean Colony Size \n (normalized to smallest colony measured)") +
-             stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
+             stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
              scale_x_discrete(labels=xlabs.three) +
              theme(legend.position = 'none')
 
@@ -178,7 +245,7 @@ xlabs.six <- paste(RDS.THREE %>%
                     mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
                     ungroup() %>%
                     mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
-                    filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+                    filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
                     filter(Size %in% c("L", "XL")) %>%
                     select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
                     group_by(N, Colony.ID, Treatment, Subclone.ID, P.Free) %>%
@@ -196,7 +263,7 @@ xlabs.six <- paste(RDS.THREE %>%
                     mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
                     ungroup() %>%
                     mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
-                    filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+                    filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
                     filter(Size %in% c("L", "XL")) %>%
                     select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
                     group_by(N, Colony.ID, Treatment, Subclone.ID, P.Free) %>%
@@ -214,7 +281,7 @@ plot.six <- RDS.THREE %>%
             mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
             ungroup() %>%
             mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
-            filter(Treatment %in% c("CTRL", "TGFBE", "TGFBL", "SMIFH2")) %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
             filter(Size %in% c("L", "XL")) %>%
             select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
             group_by(N, Colony.ID, Treatment, Subclone.ID, P.Free) %>%
@@ -225,10 +292,11 @@ plot.six <- RDS.THREE %>%
             group_by(N, Colony.ID, Treatment) %>%
             summarize(P.Fraction.Colony = mean(P.Fraction)) %>%
             ggplot(aes(x = Treatment, y = P.Fraction.Colony, fill = Treatment)) +
-            geom_boxplot(lwd = 1.1) +
+            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+            stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             scale_x_discrete(labels = xlabs.six) +
-            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE"), c("CTRL", "TGFBL"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args) +
+            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args) +
             labs(x = "Treatment", y = "Subclone boundary dominance") +
             theme(legend.position = 'none')
 
@@ -239,4 +307,10 @@ layout <- rbind(c(1,1,2,2,3,3),
                 c(4,4,5,5,6,6))
 final.plot <- arrangeGrob(plot.one, plot.two, plot.three, plot.four, plot.five, plot.six, layout_matrix = layout)
 
-ggsave('./reports/figures/Motility-Clone-Size-Distribution-Analysis.eps', final.plot, width = 9, height = 9, device=  "eps")
+ggsave('./reports/figures/Motility-Clone-Size-Distribution-Analysis.eps', final.plot, width = 11, height = 11, device=  "eps")
+ggsave('./reports/figures-eps/plot-one.eps', plot.one, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps/plot-two.eps', plot.two, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps/plot-three.eps', plot.three, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps/plot-four.eps', plot.four, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps/plot-five.eps', plot.five, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps/plot-six.eps', plot.six, width = 5, height = 5, device=  "eps")
