@@ -323,6 +323,53 @@ plot.seven <- RDS.ONE %>%
               theme(legend.position = 'none')
 
 
+# Comparison of the number of proliferating subclones between inside and outside the mean position of EdU proliferation.
+plot.eight <- RDS.ONE %>%
+            inner_join(., RDS.TWO %>% group_by(Colony.ID) %>% summarize(edu.ring = mean(D.Free))) %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
+            mutate(Position = if_else(D.Colony < edu.ring, "Exterior.EdU", "Interior.EdU")) %>%
+            mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+            mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+            group_by(Colony.ID, Treatment, Size) %>%
+            filter(Size %in% c("L", "XL")) %>%
+            ungroup() %>%
+            group_by(Colony.ID, Treatment, Position) %>%
+            summarize(sum.edu.subclone = sum(EdU.per.Subclone)) %>%
+            ungroup() %>%
+            spread(., Position, sum.edu.subclone) %>%
+            drop_na() %>%
+            mutate(Ratio = Interior.EdU / Exterior.EdU) %>%
+            mutate_if(is.numeric, list(~na_if(., Inf))) %>%
+            drop_na() %>%
+            ggplot(aes(x = Treatment, y = Ratio, fill = Treatment)) +
+            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+            stat_summary(fun.data=data_summary, color="black") +
+            theme_publication() +
+            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
+            labs(x = "Treatment", y = "Ratio of EdU +'ve ubclones \n in colony interior vs exterior") +
+            theme(legend.position = 'none')
+
+# Comparison of the total Number of Subclones per Colony per Condition.
+plot.nine <- RDS.ONE %>%
+            inner_join(., RDS.TWO %>% group_by(Colony.ID) %>% summarize(edu.ring = mean(D.Free))) %>%
+            filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
+            mutate(Position = if_else(D.Colony < edu.ring, "Exterior.EdU", "Interior.EdU")) %>%
+            mutate(fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
+            mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+            group_by(Colony.ID, Treatment, Size) %>%
+            filter(Size %in% c("L", "XL")) %>%
+            ungroup() %>%
+            subset(EdU.per.Subclone != 0) %>%
+            group_by(N, Colony.ID, Treatment, Subclone.Color) %>%
+            tally() %>%
+            ggplot(aes(x = Treatment, y = n, fill = Treatment)) +
+            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+            stat_summary(fun.data=data_summary, color="black") +
+            theme_publication() +
+            stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
+            labs(x = "Treatment", y = "Total number of Distinct \n Proliferating Subclones") +
+            theme(legend.position = 'none')
+
 layout <- rbind(c(1,1,2,2,3,3),
                 c(1,1,2,2,3,3),
                 c(4,4,5,5,6,6),
@@ -336,3 +383,5 @@ ggsave('./reports/figures-eps/plot-three.eps', plot.three, width = 5, height = 5
 ggsave('./reports/figures-eps/plot-seven.eps', plot.seven, width = 5, height = 5, device=  "eps")
 ggsave('./reports/figures-eps/plot-five.eps', plot.five, width = 5, height = 5, device=  "eps")
 ggsave('./reports/figures-eps/plot-six.eps', plot.six, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps/plot-eight.eps', plot.eight, width = 5, height = 5, device = "eps")
+ggsave('./reports/figures-eps/plot-nine.eps', plot.nine, width = 5, height = 5, device = "eps")
