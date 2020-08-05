@@ -307,18 +307,19 @@ plot.seven <- RDS.ONE %>%
               filter(Treatment %in% c("CTRL", "TGFBE", "SMIFH2")) %>%
               mutate(Norm.Subclone.Size = Subclone.Size / Colony.Size, fold.tumor.size = Colony.Size / min(Colony.Size)) %>%
               mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
-              group_by(Colony.ID, Treatment, Size) %>%
-              summarize(total.subclone.size = sum(Norm.Subclone.Size)) %>%
+              group_by(Colony.ID, Treatment, Size, Colony.Size) %>%
+              summarize(Subclone.Size = sum(Subclone.Size)) %>%
+              summarize(Subclone.Proportion = Subclone.Size / Colony.Size) %>%
               ungroup() %>%
               group_by(Treatment, Size) %>%
               filter(Size %in% c("L", "XL")) %>%
-              ggplot(aes(x = Treatment, y = total.subclone.size, fill = Treatment)) +
+              ggplot(aes(x = Treatment, y = Subclone.Proportion, fill = Treatment)) +
               geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
               stat_summary(fun.data=data_summary, color="black") +
               theme_publication() +
-              scale_x_discrete(labels = xlabs.one) +
-              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args) +
-              labs(x = "Treatment", y = "Total Subclone Area \n (Normalized to Colony Size)") +
+              # scale_x_discrete(labels = xlabs.one) +
+              stat_compare_means(comparisons = list(c("CTRL", "SMIFH2"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              labs(x = "Treatment", y = "Subclone proportion of total colony area") +
               theme(legend.position = 'none')
 
 
