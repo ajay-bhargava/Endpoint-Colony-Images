@@ -1,4 +1,4 @@
-theme_publication <- function(base_size=12, base_family="Helvetica"){
+theme_publication <- function(base_size=14, base_family="Helvetica"){
       library(grid)
       library(ggthemes)
       (theme_foundation(base_size=base_size, base_family=base_family)
@@ -9,9 +9,9 @@ theme_publication <- function(base_size=12, base_family="Helvetica"){
                plot.background = element_rect(colour = NA),
                panel.border = element_rect(colour = NA),
                axis.title = element_text(face = "bold",size = rel(1)),
-               axis.title.y = element_text(angle=90,vjust =2),
-               axis.title.x = element_text(vjust = -0.2),
-               axis.text = element_text(angle=45, hjust = 1),
+               axis.title.y = element_text(face = "bold", angle=90,vjust =2),
+               axis.title.x = element_text(face = "bold", vjust = -0.2),
+               axis.text = element_text(size = 12, angle=45, hjust = 1),
                axis.line = element_line(colour="black"),
                axis.ticks = element_line(),
                panel.grid.major = element_blank(),

@@ -38,13 +38,33 @@
 # 26 130       CTRL      L
 # 27 137       BSR01     L
 # 28 138       BSR01     M
-# 29 139       BSR01     M
+# 29 139       BSR01     M  *
 # 30 140       BSR01     M
 # 31 142       BSR10     M
 # 32 143       BSR10     L
 # 33 146       BSR10     M
 # 34 147       BSR10     M
 # 35 174       CTRL      L
+
+# That Don't Touch
+# # A tibble: 13 x 3
+# # Groups:   Treatment [4]
+#    Treatment Colony.ID Size
+#    <chr>     <chr>     <fct>
+#  1 BSR01     139       M
+#  2 BSR10     146       L
+#  3 BSR10TGFB 169       S
+#  4 BSR10TGFB 170       M
+#  5 BSR10TGFB 171       M
+#  6 BSR10TGFB 172       M
+#  7 BSR10TGFB 173       M
+#  8 CTRL      004       M
+#  9 CTRL      017       M
+# 10 CTRL      018       M
+# 11 CTRL      041       L
+# 12 CTRL      129       L
+# 13 CTRL      130       L
+
 
 # Scaling
 scale <- 0.4023
@@ -236,6 +256,29 @@ plot.two.b <- RDS.ONE %>%
                 labs(x = "Treatment", y = "Subclone \n Proportion of Colony Size") +
                 theme(legend.position = 'none')
 
+plot.two.c <- RDS.ONE %>%
+                group_by(Colony.ID, Treatment) %>%
+                filter(Treatment %in% c("CTRL", "BSR01", "BSR10")) %>%
+                ungroup() %>%
+                mutate(fold.tumor.size = Colony.Size / min(Colony.Size), Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+                mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+                group_by(Colony.ID, Subclone.Color, Treatment, Colony.Size, Size) %>%
+                summarize(Subclone.Size = sum(Subclone.Size)) %>%
+                summarize(Subclone.Proportion = Subclone.Size / Colony.Size, Class = unique(Size)) %>%
+                filter(Colony.ID %!in% c("170")) %>%
+                filter(Class %in% c("M", "L")) %>%
+                ungroup() %>%
+                mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
+                group_by(Treatment, Colony.ID) %>%
+                summarize(Total.Proportion = sum(Subclone.Proportion)) %>%
+                ggplot(aes(x = Treatment, y = Total.Proportion, fill = Treatment)) +
+                geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+                stat_summary(fun.data=data_summary, color="black") +
+                theme_publication() +
+                stat_compare_means(comparisons = list(c("CTRL", "BSR10"), c("CTRL", "BSR01")), size = 4, symnum.args = symnum.args, method = 't.test') +
+                labs(x = "Treatment", y = "Subclone \n Proportion of Colony Size") +
+                theme(legend.position = 'none')
+
 # Confident in my ability to design a system capable of having subclones selectively respond to BSR in a dose dependent manner,
 # I next asked what the spatial boundary occupation is for yPET and dTomato subclones c.f. to CTRL and BSR01 and BSR10
 plot.three.a <- RDS.THREE %>%
@@ -250,11 +293,14 @@ plot.three.a <- RDS.THREE %>%
             group_by(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, P.Free) %>%
             filter(Subclone.Color %in% c('yPET')) %>%
             mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
-            ungroup() %>%
-            group_by(N, Colony.ID, Treatment, P.Free) %>%
             summarize(P = sum(L)) %>%
-            mutate(P.Fraction = P / P.Free) %>%
             ungroup() %>%
+            group_by(Colony.ID, Treatment) %>%
+            summarize(Sum.P = sum(P), P.Free = mean(P.Free)) %>%
+            mutate(P.Fraction = Sum.P / P.Free) %>%
+            ungroup() %>%
+            filter(Colony.ID %!in% c("129", "130")) %>%
+            mutate(P.Fraction = if_else(P.Fraction > 1, 1, P.Fraction)) %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
             ggplot(aes(x = Treatment, y = P.Fraction, fill = Treatment)) +
             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
@@ -276,18 +322,21 @@ plot.three.b <- RDS.THREE %>%
             group_by(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, P.Free) %>%
             filter(Subclone.Color %in% c('dTomato')) %>%
             mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
-            ungroup() %>%
-            group_by(N, Colony.ID, Treatment, P.Free) %>%
             summarize(P = sum(L)) %>%
-            mutate(P.Fraction = P / P.Free) %>%
             ungroup() %>%
+            group_by(Colony.ID, Treatment) %>%
+            summarize(Sum.P = sum(P), P.Free = mean(P.Free)) %>%
+            mutate(P.Fraction = Sum.P / P.Free) %>%
+            ungroup() %>%
+            filter(Colony.ID %!in% c("129", "130")) %>%
+            mutate(P.Fraction = if_else(P.Fraction > 1, 1, P.Fraction)) %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
             ggplot(aes(x = Treatment, y = P.Fraction, fill = Treatment)) +
             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             stat_compare_means(comparisons = list(c("CTRL", "BSR10"), c("CTRL", "BSR01")), size = 4, symnum.args = symnum.args, method = 't.test') +
-            labs(x = "Treatment", y = "Subclone boundary dominance \n for dTomato Subclones") +
+            labs(x = "Treatment", y = "Subclone boundary dominance \n for yPET-BSR Subclones") +
             theme(legend.position = 'none')
 
 # Then I asked where therapy resistant subclones are proliferating.
@@ -425,7 +474,7 @@ plot.ten.c <- RDS.ONE %>%
 
 # Dose Dependency Validation of Phenotype
 dose.dependency.validation <- arrangeGrob(plot.one.a, plot.one.b, plot.one.c, plot.one.d, plot.one.e)
-subclone.proportion.dose.dependency <- arrangeGrob(plot.two.a, plot.two.b)
+subclone.proportion.dose.dependency <- arrangeGrob(plot.two.a, plot.two.b, plot.two.c)
 spatial.boundary.dose.dependency <- arrangeGrob(plot.three.a, plot.three.b)
 therapy.edu.dose.dependency <- arrangeGrob(plot.four.a, plot.four.b)
 n.subclones.dose.dependency <- arrangeGrob(plot.ten.a, plot.ten.b, plot.ten.c)

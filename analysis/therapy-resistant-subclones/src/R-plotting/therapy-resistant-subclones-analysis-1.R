@@ -19,6 +19,25 @@
 # 7 172       BSR10TGFB
 # 8 173       BSR10TGFB
 
+# That Don't Touch
+# # A tibble: 13 x 3
+# # Groups:   Treatment [4]
+#    Treatment Colony.ID Size
+#    <chr>     <chr>     <fct>
+#  1 BSR01     139       M
+#  2 BSR10     146       L
+#  3 BSR10TGFB 169       S
+#  4 BSR10TGFB 170       M
+#  5 BSR10TGFB 171       M
+#  6 BSR10TGFB 172       M
+#  7 BSR10TGFB 173       M
+#  8 CTRL      004       M
+#  9 CTRL      017       M
+# 10 CTRL      018       M
+# 11 CTRL      041       L
+# 12 CTRL      129       L
+# 13 CTRL      130       L
+
 # Scaling
 scale <- 0.4023
 
@@ -61,7 +80,7 @@ plot.five.a <- RDS.ONE %>%
              summarize(mean.size = mean(Colony.Size)) %>%
              filter(Colony.ID %!in% c("170")) %>%
              ggplot(aes(y = mean.size, x = Treatment, fill = Treatment)) +
-             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+             geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1)) +
              stat_summary(fun.data=data_summary, color="black") +
              theme_publication() +
              labs(x = "Treatment", y = "Colony Size (microns)") +
@@ -82,7 +101,7 @@ plot.five.b <- RDS.ONE %>%
             ungroup() %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
             ggplot(aes(x = Treatment, y = SD, fill = Treatment)) +
-            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
+            geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "goldenrod2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             # stat_summary(geom = "errorbar",
@@ -105,7 +124,7 @@ plot.five.c <- RDS.ONE %>%
             ungroup() %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
             ggplot(aes(x = Treatment, y = SD, fill = Treatment)) +
-            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
+            geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "orangered2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             # stat_summary(geom = "errorbar",
@@ -166,11 +185,12 @@ plot.six.a <- RDS.ONE %>%
               ungroup() %>%
               mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
               filter(Colony.ID %!in% c("170")) %>%
-              ggplot(aes(x = Treatment, y = Subclone.Proportion, fill = Treatment)) +
-              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
-              stat_summary(fun.data=data_summary, color="black", fill = "goldenrod2") +
+              ggplot(aes(x = Treatment, y = Subclone.Proportion)) +
+              geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "goldenrod2") +
+              stat_summary(fun.data=data_summary, color="black") +
               stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
               theme_publication() +
+              ylim(0, 1) +
               labs(x = "Treatment", y = "Subclone \n Proportion of Colony Size") +
               theme(legend.position = 'none')
 
@@ -184,11 +204,12 @@ plot.six.b <- RDS.ONE %>%
               ungroup() %>%
               mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
               filter(Colony.ID %!in% c("170")) %>%
-              ggplot(aes(x = Treatment, y = Subclone.Proportion, fill = Treatment)) +
-              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
+              ggplot(aes(x = Treatment, y = Subclone.Proportion)) +
+              geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "orangered2") +
               stat_summary(fun.data=data_summary, color="black") +
               stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
               theme_publication() +
+              ylim(0, 1) +
               labs(x = "Treatment", y = "Subclone \n Proportion of Colony Size") +
               theme(legend.position = 'none')
 
@@ -199,21 +220,26 @@ plot.seven.a <- RDS.THREE %>%
             mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
             group_by(Colony.ID, Treatment, Size) %>%
             filter(Colony.ID %!in% c("170")) %>%
+            filter(Size %in% c("M", "L")) %>%
             ungroup() %>%
             select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
             group_by(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, P.Free) %>%
             filter(Subclone.Color %in% c('yPET')) %>%
             mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
-            ungroup() %>%
-            group_by(N, Colony.ID, Treatment, P.Free) %>%
             summarize(P = sum(L)) %>%
-            mutate(P.Fraction = P / P.Free) %>%
             ungroup() %>%
+            group_by(Colony.ID, Treatment) %>%
+            summarize(Sum.P = sum(P), P.Free = mean(P.Free)) %>%
+            mutate(P.Fraction = Sum.P / P.Free) %>%
+            ungroup() %>%
+            filter(Colony.ID %!in% c("142")) %>%
+            mutate(P.Fraction = if_else(P.Fraction > 1, 1, P.Fraction)) %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
             ggplot(aes(x = Treatment, y = P.Fraction, fill = Treatment)) +
             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
+            ylim(0,1) +
             stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
             labs(x = "Treatment", y = "Subclone boundary dominance \n for yPET-BSR Subclones") +
             theme(legend.position = 'none')
@@ -224,21 +250,26 @@ plot.seven.b <- RDS.THREE %>%
             mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
             group_by(Colony.ID, Treatment, Size) %>%
             filter(Colony.ID %!in% c("170")) %>%
+            filter(Size %in% c("M", "L")) %>%
             ungroup() %>%
             select(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, X, Y, P.Free, Size) %>%
             group_by(N, Colony.ID, Treatment, Subclone.ID, Subclone.Color, P.Free) %>%
             filter(Subclone.Color %in% c('dTomato')) %>%
             mutate(L = sqrt(abs((X - roll(X,1)))^2 + abs((Y - roll(Y,1)))^2)) %>%
-            ungroup() %>%
-            group_by(N, Colony.ID, Treatment, P.Free) %>%
             summarize(P = sum(L)) %>%
-            mutate(P.Fraction = P / P.Free) %>%
             ungroup() %>%
+            group_by(Colony.ID, Treatment) %>%
+            summarize(Sum.P = sum(P), P.Free = mean(P.Free)) %>%
+            mutate(P.Fraction = Sum.P / P.Free) %>%
+            ungroup() %>%
+            filter(Colony.ID %!in% c("142")) %>%
+            mutate(P.Fraction = if_else(P.Fraction > 1, 1, P.Fraction)) %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
             ggplot(aes(x = Treatment, y = P.Fraction, fill = Treatment)) +
             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
+            ylim(0,1) +
             stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
             labs(x = "Treatment", y = "Subclone boundary dominance \n for dTomato Subclones") +
             theme(legend.position = 'none')
@@ -266,7 +297,7 @@ plot.eight.a <- RDS.ONE %>%
              mutate(Ratio = Interior.EdU / Exterior.EdU) %>%
              mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
              ggplot(aes(x = Treatment, y = Ratio)) +
-             geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
+             geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "goldenrod2") +
              stat_summary(fun.data=data_summary, color="black") +
              theme_publication() +
              stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
@@ -291,7 +322,7 @@ plot.eight.b <- RDS.ONE %>%
             mutate(Ratio = Interior.EdU / Exterior.EdU) %>%
             mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("BSR10", "BSR10TGFB"))) %>%
             ggplot(aes(x = Treatment, y = Ratio)) +
-            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
+            geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "orangered2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
@@ -314,7 +345,7 @@ plot.nine.a <- RDS.ONE %>%
             tally() %>%
             filter(Subclone.Color %in% c("yPET")) %>%
             ggplot(aes(x = Treatment, y = n)) +
-            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
+            geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "goldenrod2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
@@ -336,7 +367,7 @@ plot.nine.b <- RDS.ONE %>%
             tally() %>%
             filter(Subclone.Color %in% c("dTomato")) %>%
             ggplot(aes(x = Treatment, y = n)) +
-            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
+            geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1), fill = "orangered2") +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
@@ -356,7 +387,7 @@ plot.nine.c <- RDS.ONE %>%
             group_by(N, Colony.ID, Treatment) %>%
             tally() %>%
             ggplot(aes(x = Treatment, y = n, fill = Treatment)) +
-            geom_jitter(shape = 21, size = 2, position=position_jitter(0.1)) +
+            geom_jitter(shape = 21, size = 4, stroke = 1.5, position=position_jitter(0.1)) +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             stat_compare_means(comparisons = list(c("BSR10", "BSR10TGFB")), size = 4, symnum.args = symnum.args, method = 't.test') +
