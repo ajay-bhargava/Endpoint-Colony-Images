@@ -207,7 +207,7 @@ plot.three <- data.three %>%
               stat_summary(fun.data=data_summary, color="black") +
               theme_publication() +
               labs(x = "Treatment", y = "Standard Deviation of EdU Position \n (normalized to colony size)") +
-              stat_compare_means(comparisons = list(c("CTRL", "TGFBL"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              stat_compare_means(comparisons = list(c("CTRL", "TGFBL"), c("CTRL", "TGFBE"), c("TGFBE", "TGFBL")), size = 4, symnum.args = symnum.args, method = 't.test') +
               scale_x_discrete(labels=xlabs.three) +
               theme(legend.position = 'none')
 
@@ -348,12 +348,13 @@ plot.eight <- RDS.ONE %>%
             mutate(Ratio = Interior.EdU / Exterior.EdU) %>%
             mutate_if(is.numeric, list(~na_if(., Inf))) %>%
             drop_na() %>%
+            filter(Colony.ID %!in% c("034", "030")) %>%
             ggplot(aes(x = Treatment, y = Ratio, fill = Treatment)) +
             geom_jitter(shape = 21, size = 4, position=position_jitter(0.1)) +
             stat_summary(fun.data=data_summary, color="black") +
             theme_publication() +
             stat_compare_means(comparisons = list(c("CTRL", "TGFBL"), c("CTRL", "TGFBE")), size = 4, symnum.args = symnum.args, method = 't.test') +
-            labs(x = "Treatment", y = "Ratio of EdU +'ve ubclones \n in colony interior vs exterior") +
+            labs(x = "Treatment", y = "Ratio of EdU +'ve Subclones \n in colony interior vs exterior") +
             theme(legend.position = 'none')
 
 # Comparison of the total Number of Subclones per Colony per Condition.
@@ -383,12 +384,12 @@ layout <- rbind(c(1,1,2,2,3,3),
                 c(4,4,5,5,6,6))
 final.plot <- arrangeGrob(plot.one, plot.two, plot.three, plot.seven, plot.five, plot.six, layout_matrix = layout)
 
-ggsave('./reports/figures/Motility-Clone-Size-Distribution-Analysis.eps', final.plot, width = 11, height = 11, device=  "eps")
-ggsave('./reports/figures-eps/plot-one.eps', plot.one, width = 5, height = 5, device=  "eps")
-ggsave('./reports/figures-eps/plot-two.eps', plot.two, width = 5, height = 5, device=  "eps")
-ggsave('./reports/figures-eps/plot-three.eps', plot.three, width = 5, height = 5, device=  "eps")
-ggsave('./reports/figures-eps/plot-seven.eps', plot.seven, width = 5, height = 5, device=  "eps")
-ggsave('./reports/figures-eps/plot-five.eps', plot.five, width = 5, height = 5, device=  "eps")
-ggsave('./reports/figures-eps/plot-six.eps', plot.six, width = 5, height = 5, device=  "eps")
-ggsave('./reports/figures-eps/plot-eight.eps', plot.eight, width = 5, height = 5, device = "eps")
-ggsave('./reports/figures-eps/plot-nine.eps', plot.nine, width = 5, height = 5, device = "eps")
+# ggsave('./reports/figures/Motility-Clone-Size-Distribution-Analysis.eps', final.plot, width = 11, height = 11, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-one.eps', plot.one, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-two.eps', plot.two, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-three.eps', plot.three, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-seven.eps', plot.seven, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-five.eps', plot.five, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-six.eps', plot.six, width = 5, height = 5, device=  "eps")
+ggsave('./reports/figures-eps-2/plot-eight.eps', plot.eight, width = 5, height = 5, device = "eps")
+ggsave('./reports/figures-eps-2/plot-nine.eps', plot.nine, width = 5, height = 5, device = "eps")

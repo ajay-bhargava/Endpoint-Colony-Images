@@ -330,7 +330,7 @@ plot.eight.b <- RDS.ONE %>%
             theme(legend.position = 'none')
 
 
-# Finally, I examined the 'diversity' of the colony. Here I quantified the number of distinct & proliferating therapy resistant subclones for colonies under treatment, keeping all other parameters same.
+# I examined the 'diversity' of the colony. Here I quantified the number of distinct & proliferating therapy resistant subclones for colonies under treatment, keeping all other parameters same.
 plot.nine.a <- RDS.ONE %>%
             inner_join(., RDS.TWO %>% group_by(Colony.ID) %>% summarize(edu.ring = mean(D.Free))) %>%
             filter(Treatment %in% c("BSR10", "BSR10TGFB")) %>%
@@ -399,6 +399,7 @@ plot.nine.c <- RDS.ONE %>%
 # Compile all the graphs
 #
 ##########
+
 # Comparison of BSR10 TGFB and CTRL
 mixing.validation <- arrangeGrob(plot.five.a, plot.five.b, plot.five.c, plot.five.d, plot.five.e)
 mixing.proportion.subclone <- arrangeGrob(plot.six.a, plot.six.b)

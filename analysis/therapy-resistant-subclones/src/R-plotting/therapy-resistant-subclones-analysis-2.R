@@ -465,6 +465,102 @@ plot.ten.c <- RDS.ONE %>%
             labs(x = "Treatment", y = "Total number of Distinct \n Proliferating Subclones") +
             theme(legend.position = 'none')
 
+# Next, I examined the number and size of annhilated therapy resistant (yPET) subclones.
+# An annhilated subclone is designated as one whose border is not shared with the growth perimeter
+
+plot.eleven.a <- RDS.ONE %>%
+              anti_join(., RDS.THREE %>% group_by(Colony.ID, Subclone.Color) %>% count(Subclone.ID), by = c("Colony.ID", "Subclone.Color", "Subclone.ID")) %>% # excludes subclones that touch the perimeter.
+              filter(Treatment %in% c("CTRL", "BSR01", "BSR10")) %>%
+              ungroup() %>%
+              mutate(fold.tumor.size = Colony.Size / min(Colony.Size), Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+              mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+              filter(Colony.ID %!in% c("170")) %>%
+              filter(Size %in% c("M", "L")) %>%
+              ungroup() %>%
+              group_by(Colony.ID, Treatment, Subclone.Color) %>%
+              filter(Subclone.Color %in% c("yPET")) %>%
+              summarize(count = n(), sum.size = sum(Norm.Subclone.Size)) %>%
+              ungroup() %>%
+              mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
+              ggplot(aes(x = Treatment,  y = count, fill = Treatment)) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
+              stat_summary(fun.data=data_summary, color="black") +
+              theme_publication() +
+              # stat_compare_means(comparisons = list(c("CTRL", "BSR10"), c("CTRL", "BSR01")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              labs(x = "Treatment", y = "Number of \n annhilated subclones") +
+              ylim(NA, 2000) +
+              theme(legend.position = 'none')
+
+plot.eleven.b <- RDS.ONE %>%
+              anti_join(., RDS.THREE %>% group_by(Colony.ID, Subclone.Color) %>% count(Subclone.ID), by = c("Colony.ID", "Subclone.Color", "Subclone.ID")) %>% # excludes subclones that touch the perimeter.
+              filter(Treatment %in% c("CTRL", "BSR01", "BSR10")) %>%
+              ungroup() %>%
+              mutate(fold.tumor.size = Colony.Size / min(Colony.Size), Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+              mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+              filter(Colony.ID %!in% c("170")) %>%
+              filter(Size %in% c("M", "L")) %>%
+              ungroup() %>%
+              group_by(Colony.ID, Treatment, Subclone.Color) %>%
+              summarize(count = n(), sum.size = sum(Norm.Subclone.Size)) %>%
+              filter(Subclone.Color %in% c("dTomato")) %>%
+              ungroup() %>%
+              mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
+              ggplot(aes(x = Treatment,  y = count, fill = Treatment)) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
+              stat_summary(fun.data=data_summary, color="black") +
+              theme_publication() +
+              # stat_compare_means(comparisons = list(c("CTRL", "BSR10"), c("CTRL", "BSR01")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              labs(x = "Treatment", y = "Number of \n annhilated subclones") +
+              ylim(NA, 2000) +
+              theme(legend.position = 'none')
+
+plot.eleven.c <- RDS.ONE %>%
+              anti_join(., RDS.THREE %>% group_by(Colony.ID, Subclone.Color) %>% count(Subclone.ID), by = c("Colony.ID", "Subclone.Color", "Subclone.ID")) %>% # excludes subclones that touch the perimeter.
+              filter(Treatment %in% c("CTRL", "BSR01", "BSR10")) %>%
+              ungroup() %>%
+              mutate(fold.tumor.size = Colony.Size / min(Colony.Size), Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+              mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+              filter(Colony.ID %!in% c("170")) %>%
+              filter(Size %in% c("M", "L")) %>%
+              ungroup() %>%
+              group_by(Colony.ID, Treatment, Subclone.Color) %>%
+              summarize(count = n(), max.size = max(Norm.Subclone.Size)) %>%
+              filter(Subclone.Color %in% c("yPET")) %>%
+              ungroup() %>%
+              mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
+              ggplot(aes(x = Treatment,  y = max.size, fill = Treatment)) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "goldenrod2") +
+              stat_summary(fun.data=data_summary, color="black") +
+              theme_publication() +
+              # stat_compare_means(comparisons = list(c("CTRL", "BSR10"), c("CTRL", "BSR01")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              labs(x = "Treatment", y = "Maximum \n annhilated subclone size") +
+              theme(legend.position = 'none') +
+              ylim(NA, 0.1)
+
+plot.eleven.d <- RDS.ONE %>%
+              anti_join(., RDS.THREE %>% group_by(Colony.ID, Subclone.Color) %>% count(Subclone.ID), by = c("Colony.ID", "Subclone.Color", "Subclone.ID")) %>% # excludes subclones that touch the perimeter.
+              filter(Treatment %in% c("CTRL", "BSR01", "BSR10")) %>%
+              ungroup() %>%
+              mutate(fold.tumor.size = Colony.Size / min(Colony.Size), Norm.Subclone.Size = Subclone.Size / Colony.Size) %>%
+              mutate(Size=cut(fold.tumor.size, breaks=c(-Inf, 1, 5, 10, Inf), labels=c("S", "M", "L", "XL"))) %>%
+              filter(Colony.ID %!in% c("170")) %>%
+              filter(Size %in% c("M", "L")) %>%
+              ungroup() %>%
+              group_by(Colony.ID, Treatment, Subclone.Color) %>%
+              summarize(count = n(), max.size = max(Norm.Subclone.Size)) %>%
+              filter(Subclone.Color %in% c("dTomato")) %>%
+              ungroup() %>%
+              mutate(Treatment = as.factor(Treatment) %>% fct_relevel(., levels = c("CTRL", "BSR01", "BSR10"))) %>%
+              ggplot(aes(x = Treatment,  y = max.size, fill = Treatment)) +
+              geom_jitter(shape = 21, size = 2, position=position_jitter(0.1), fill = "orangered2") +
+              stat_summary(fun.data=data_summary, color="black") +
+              theme_publication() +
+              # stat_compare_means(comparisons = list(c("CTRL", "BSR10"), c("CTRL", "BSR01")), size = 4, symnum.args = symnum.args, method = 't.test') +
+              labs(x = "Treatment", y = "Maximum \n annhilated subclone size") +
+              theme(legend.position = 'none') +
+              ylim(NA, 0.1)
+
+
 
 ##########
 #
