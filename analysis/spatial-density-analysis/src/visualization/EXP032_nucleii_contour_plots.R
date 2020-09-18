@@ -1,4 +1,4 @@
-### R, contour graph, EXP32_Colony_Distribution				        ### 
+### R, contour graph, EXP32_Colony_Distribution				        ###
 ### Ajay Bhargava													###
 ###	28/04/2018														###
 
@@ -9,15 +9,11 @@ library("EBImage")
 library("tidyverse")
 library("gridExtra")
 
-path <- "/Users/bhargaa/Desktop/needs_analysis/EXP032_2N_Colony_Measurements/output_dapi/"
+path <- "/Users/bhargaa/Desktop"
 
-path_out <- "/Users/bhargaa/Desktop/"
+files <- list.files(path, pattern = "*.tif", full.names = TRUE, recursive = TRUE)
 
-files <- list.files(path, pattern = "*.tif")
-
-setwd(path)
-
-img <- list() 
+img <- list()
 
 for (x in 1:length(files)){
 	img[[x]] <- readImage(files[[x]])
@@ -29,7 +25,7 @@ for (x in 1:length(files)){
 plot <- list()
 
 for (i in 1:length(files)){
-	
+
 	#Counter
 
 	x = i
@@ -61,13 +57,18 @@ for (i in 1:length(files)){
 
 	#Plotting Data
 
-	plot[[x]] <- ggplot(data_raster, aes(x=x_R, y=y_R)) + geom_hex(bins = 150) + theme(legend.title=element_blank()) + coord_fixed(ratio = 1)
-	plot[[x]] <- plot[[x]] + scale_fill_distiller(palette= "Spectral", direction=1)
-	plot[[x]] <- plot[[x]] + theme_void() + theme(plot.background = element_rect(fill = "transparent", colour = NA)) + guides(fill = guide_colorbar(barwidth = 0.25, barheight = 2)) + guides(fill = guide_colorbar(ticks = FALSE))
-	plot[[x]] <- plot[[x]] + annotate("path", x=2523+1261*cos(seq(0,2*pi,length.out=100)), y=0+1261*sin(seq(0,2*pi,length.out=100)))
+	plot <- ggplot(data.raster, aes(x=x_R, y=y_R)) + geom_hex(bins = 150) + theme(legend.title=element_blank()) + coord_fixed(ratio = 1)
+	plot <- plot + scale_fill_distiller(palette= "Spectral", direction=1)
+	plot <- plot + theme_void() + theme(plot.background = element_rect(fill = "transparent", colour = NA)) + guides(fill = guide_colorbar(barwidth = 0.25, barheight = 2)) + guides(fill = guide_colorbar(ticks = FALSE))
+	plot <- plot + annotate("path", x=2523+1261*cos(seq(0,2*pi,length.out=100)), y=0+1261*sin(seq(0,2*pi,length.out=100)))
 }
 
 final <- do.call("grid.arrange", c(plot, ncol=10))
 
 ggsave("topology_map.png", plot = final, device = "png", scale = 1, width = 30, height = 11, units = c("in"), dpi = 320, path=path_out)
 
+
+plot <- ggplot(data.raster, aes(x=x_R, y=y_R)) + geom_hex(bins = 150) + theme(legend.title=element_blank()) + coord_fixed(ratio = 1)
+plot <- plot + scale_fill_distiller(palette= "Spectral", direction=1)
+plot <- plot + theme_void() + theme(plot.background = element_rect(fill = "transparent", colour = NA)) + guides(fill = guide_colorbar(barwidth = 0.25, barheight = 2)) + guides(fill = guide_colorbar(ticks = FALSE))
+# plot <- plot + annotate("path", x=2523+1261*cos(seq(0,2*pi,length.out=100)), y=0+1261*sin(seq(0,2*pi,length.out=100)))
